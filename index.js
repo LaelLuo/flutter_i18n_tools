@@ -1,20 +1,19 @@
 #! /usr/bin/env node
 /** 
  * 需要参数
- * src 资源文件见
+ * src 资源文件夹
  * dist 生成目录
  * */
 const
     fs = require('fs'),
     path = require('path'),
-    http = require('http'),
-    debug = true,
-    print = (obj) => { debug ? console.log(obj) : null },
-    args = process.argv.slice(2),
-    src = path.resolve(args[0]),
-    dist = path.resolve(args[1]),
-    reg = /"[\u4e00-\u9fa5]+"/gm,
-    map = new Map()
+    utils = require('./src/common_utils'),
+    print = utils.print(true),
+    args = utils.getArgs(process.argv.slice(2)),
+    src = path.resolve(args.src),
+    dist = path.resolve(args.dist),
+    reg = /["'][\u4e00-\u9fa5，！。]+["']/gm,
+    map = {}
 
 print(`src path: ${src}`)
 print(`dist path: ${dist}`)
@@ -25,38 +24,7 @@ if (!fs.existsSync(dist)) {
     print('dist dir created')
 }
 
-start()
-
-function translate(word) {
-    return new Promise((resolve, reject) => {
-        http.get(`http://fy.iciba.com/ajax.php?a=fy&f=zh&t=en&w=${word}`, (resp) => {
-            let data = '';
-            resp.on('data', (chunk) => {
-                data += chunk;
-            });
-            resp.on('end', () => {
-                let result = JSON.parse(data).content.out.replace(/[^a-zA-Z ]/g, '');
-                resolve(result)
-            });
-        }).on("error", (err) => {
-            console.log("Error: " + err.message);
-            reject(err)
-        });
-    })
-}
-
-function camelCase(word) {
-    let result = ''
-    word = word.trim()
-    word.toLowerCase().split(' ').forEach((sub) => {
-        if (sub == '') {
-            return
-        }
-        result += sub[0].toUpperCase() + sub.substr(1)
-    })
-    result = result[0].toLowerCase() + result.substr(1)
-    return result
-}
+start(src,dist)
 
 /**
  * 需要读取文件
@@ -68,16 +36,12 @@ function camelCase(word) {
  * 接口http://fy.iciba.com/ajax.php?a=fy&f=auto&t=auto&w=代码
  * 转驼峰
  * 得到key
- * 如果map[key] == null
- * map[key] = 源文本
- * 否则
- * 判断map[key] == 源文本
- * 是 则
  * 源文本替换为
  * S.of(context).$key
- * 否 则key = $key
+ * 并保存key:源文本
+ * 最后输出arb文件
  * */
-async function start() {
+async function start(src,dist) {
     await recursiveFile(src, async (filePath, file) => {
         print(`reading file: ${filePath}`)
         let data = file.toString()
@@ -95,15 +59,9 @@ async function start() {
                 data = await processing(data, result[0], result.index)
             }
         }
-        // print(data)
         fs.writeFileSync(filePath, data)
     })
-    map.forEach((value, key) => print(`${key}:${value}`))
-    let obj = Object.create(null);
-    for (let [k, v] of map) {
-        obj[k] = v;
-    }
-    fs.writeFileSync(path.resolve(dist, 'arb.arb'), JSON.stringify(obj))
+    fs.writeFileSync(path.resolve(dist, 'arb.arb'), JSON.stringify(map, null, '\t'))
 }
 
 function addImport(data) {
@@ -115,7 +73,7 @@ function addMap(key, value) {
         key = `${key}2`
         return addMap(key, value)
     }
-    map.set(key, value)
+    map[key] = value
     return key
 }
 
@@ -128,11 +86,11 @@ async function processing(data, word, index) {
     let key = word.substr(1, word.length - 2)
     try {
         await sleep(500)
-        key = await translate(key)
+        key = await utils.translate(key)
     } catch (error) {
     }
     print(key)
-    key = camelCase(key)
+    key = utils.camelCase(key)
     key = addMap(key, value)
     return data.replace(word, `S.of(context).${key}`)
 }
@@ -152,7 +110,7 @@ async function recursiveFile(filePath, callback) {
         if (typeof callback === "function" && path.parse(filePath).ext == '.dart') {
             await callback(filePath, fs.readFileSync(filePath))
         } else {
-            print(callback)
+            print(`skip\ntypeof callback: ${typeof callback}\npath.parse(filePath).ext: ${path.parse(filePath).ext}\n`)
         }
     }
 }

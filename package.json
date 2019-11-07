@@ -4,10 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/_mocha ./test"
   },
   "keywords": [],
   "author": "LaelLuo",
   "license": "GPL-3.0",
-  "dependencies": {}
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "^6.2.2"
+  }
 }

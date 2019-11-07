@@ -12,7 +12,7 @@ const
     args = utils.getArgs(process.argv.slice(2)),
     src = path.resolve(args.src),
     dist = path.resolve(args.dist),
-    reg = /["'][\u4e00-\u9fa5，！。]+["']/gm,
+    reg = /[^r]["'][\u4e00-\u9fa5，！。 ]+["']/gm,
     map = {}
 
 print(`src path: ${src}`)
@@ -24,7 +24,7 @@ if (!fs.existsSync(dist)) {
     print('dist dir created')
 }
 
-start(src,dist)
+start(src, dist)
 
 /**
  * 需要读取文件
@@ -41,7 +41,7 @@ start(src,dist)
  * 并保存key:源文本
  * 最后输出arb文件
  * */
-async function start(src,dist) {
+async function start(src, dist) {
     await recursiveFile(src, async (filePath, file) => {
         print(`reading file: ${filePath}`)
         let data = file.toString()

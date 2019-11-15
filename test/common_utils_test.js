@@ -28,11 +28,29 @@ describe('common_utils 测试:', () => {
             assert(await utils.translate('代码') == 'code')
         })
     })
-    describe('getArgs', () => {
-        it('读取属性', () => {
-            let args = utils.getArgs(['src=a', 'dist=sa'])
-            assert(args.src == 'a' && args.dist == 'sa')
-            assert(args.src != 'sa' && args.dist != 'a')
+    describe('walk', () => {
+        let print = utils.print(true)
+        it('sync', () => {
+            let result = ''
+            utils.walk('./data', (filePath, data) => {
+                result = filePath
+            })
+            assert(result == 'data\\test.dart')
+        })
+    })
+    describe('analyze', () => {
+        it('key@value', () => {
+            utils.analyze('a@b', (result) => {
+                assert(result.key == 'a', result.key)
+                assert(result.value == 'b', result.value)
+            })
+        })
+        it('key@value${}', () => {
+            utils.analyze('a@b${c@d}b', (result) => {
+                assert(result.key == 'a', result.key)
+                assert(result.value == 'b${c}b', `value ${result.value}`)
+                assert(result.params.c == 'd', result.params)
+            })
         })
     })
 })

@@ -7,7 +7,7 @@
 const
     fs = require('fs'),
     path = require('path'),
-    utils = require('./src/common_utils'),
+    utils = require('../src/common_utils'),
     print = utils.print(true),
     args = utils.getArgs(process.argv.slice(2)),
     src = path.resolve(args.src),

@@ -14,22 +14,17 @@ class AppLocalizations implements WidgetsLocalizations {
 
   @override
   TextDirection get textDirection => TextDirection.ltr;
+@get
 }
 
 @class
-class $en extends AppLocalizations {
-  const $en();
-}
 
 class GeneratedLocalizationsDelegate
     extends LocalizationsDelegate<AppLocalizations> {
   const GeneratedLocalizationsDelegate();
 
   List<Locale> get supportedLocales {
-    return const <Locale>[
-      @locale
-      Locale("en", ""),
-    ];
+    return const <Locale>[@locale];
   }
 
   LocaleListResolutionCallback listResolution(
@@ -55,9 +50,7 @@ class GeneratedLocalizationsDelegate
     final String lang = getLang(locale);
     if (lang != null) {
       switch (lang) {
-        case "en":
-          AppLocalizations.current = const $en();
-          return SynchronousFuture<AppLocalizations>(AppLocalizations.current);
+        @load
         default:
       }
     }

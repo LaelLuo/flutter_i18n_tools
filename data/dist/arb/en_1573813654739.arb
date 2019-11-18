@@ -1,5 +1,0 @@
-{
-	"keyA": "valueA",
-	"keyA$": "valueB",
-	"keyC": "valueC${a}valueC${a}"
-}

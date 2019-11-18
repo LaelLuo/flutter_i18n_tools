@@ -73,7 +73,7 @@ function walk(filePath, callback) {
             walk(path.join(filePath, fileName), callback)
         }
     } else {
-        if (typeof callback === "function" && path.parse(filePath).ext == '.dart') {
+        if (typeof callback === "function") {
             callback(filePath, fs.readFileSync(filePath).toString())
         }
     }
